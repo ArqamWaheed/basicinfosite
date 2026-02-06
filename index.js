@@ -1,30 +1,29 @@
-import http from 'node:http';
 import fs from 'node:fs';
+import express from 'express';
 
-const server = http.createServer();
+const app = express();
+const PORT = 8080;
 
 function servePage(url, response) {
-    response.writeHead(200, { 'Content-Type': 'text/html' });
     fs.readFile(url, 'utf8', (err, data) => {
     if (err) {
         console.error(err);
         return;
     }
-    response.end(data);
+    response.send(data);
     });
 }
 
-server.on('request', (request, res) => {
-    if (request.url === "/") {
-        servePage("./index.html", res);
-    } else if (request.url === "/about") {
-        servePage("./about.html", res);
-    } else if (request.url === "/contact-me") {
-        servePage("./contact-me.html", res);
-    } else {
-        servePage("./404.html", res);
-    }
+app.get("/", (req, res) => servePage("./index.html", res));
+app.get("/about", (req, res) => servePage("./about.html", res));
+app.get("/contact-me", (req, res) => servePage("./contact-me.html", res));
+app.use((req, res, next) => {
+    res.status(404);
+    servePage("./404.html", res)
 });
 
-server.listen("8080", 'localhost');
+app.listen(PORT, (error) => {
+    if (error) throw error;
+    console.log("Server started on PORT: ", PORT);
+})
 
